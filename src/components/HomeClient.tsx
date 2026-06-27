@@ -3,24 +3,36 @@
 import { useState } from "react";
 import Link from "next/link";
 
-export default function HomeClient({ entries, allAffirmations }: { entries: any[], allAffirmations: string[] }) {
-  const [view, setView] = useState<"calendar" | "list">("calendar");
-  const [affirmationsList, setAffirmationsList] = useState(allAffirmations);
+export default function HomeClient({ entries, affirmations }: { entries: any[], affirmations: any[] }) {
+  const [view, setView] = useState<"calendar" | "list" | "affirmations">("calendar");
+  const [affirmationsList, setAffirmationsList] = useState(affirmations);
   const [newAffirmationText, setNewAffirmationText] = useState("");
+  const [newCategory, setNewCategory] = useState("General");
+  const [customCategory, setCustomCategory] = useState("");
   const [addingAffirmation, setAddingAffirmation] = useState(false);
+  
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const categories = Array.from(new Set(affirmationsList.map(a => a.category).filter(Boolean)));
 
   const handleAddAffirmation = async () => {
     if (!newAffirmationText.trim()) return;
+    
+    const categoryToUse = newCategory === "Custom" ? customCategory.trim() : newCategory;
+    if (!categoryToUse) return;
+
     setAddingAffirmation(true);
     try {
       const res = await fetch("/api/affirmations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: newAffirmationText })
+        body: JSON.stringify({ text: newAffirmationText, category: categoryToUse })
       });
       if (res.ok) {
-        setAffirmationsList(prev => [...prev, newAffirmationText.trim()]);
+        const data = await res.json();
+        setAffirmationsList(prev => [...prev, data.data]);
         setNewAffirmationText("");
+        setCustomCategory("");
       }
     } catch (e) {
       console.error(e);
@@ -45,6 +57,10 @@ export default function HomeClient({ entries, allAffirmations }: { entries: any[
 
   const monthName = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
+  const filteredAffirmations = selectedCategory === "All" 
+    ? affirmationsList 
+    : affirmationsList.filter(a => a.category === selectedCategory);
+
   return (
     <div className="container" style={{ paddingTop: '40px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
@@ -52,6 +68,7 @@ export default function HomeClient({ entries, allAffirmations }: { entries: any[
         <div style={{ display: 'flex', gap: '8px' }}>
           <button className="btn-ghost" style={{ borderColor: view === 'calendar' ? 'var(--gold)' : '', color: view === 'calendar' ? 'var(--gold)' : '' }} onClick={() => setView('calendar')}>Calendar</button>
           <button className="btn-ghost" style={{ borderColor: view === 'list' ? 'var(--gold)' : '', color: view === 'list' ? 'var(--gold)' : '' }} onClick={() => setView('list')}>List</button>
+          <button className="btn-ghost" style={{ borderColor: view === 'affirmations' ? 'var(--gold)' : '', color: view === 'affirmations' ? 'var(--gold)' : '' }} onClick={() => setView('affirmations')}>Affirmations</button>
         </div>
       </div>
 
@@ -61,7 +78,7 @@ export default function HomeClient({ entries, allAffirmations }: { entries: any[
         </Link>
       </div>
 
-      {view === "calendar" ? (
+      {view === "calendar" && (
         <div className="card" style={{ padding: '32px' }}>
           <h2 className="font-serif" style={{ textAlign: 'center', marginBottom: '24px', fontSize: '1.2rem', fontStyle: 'italic' }}>{monthName}</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center' }}>
@@ -88,7 +105,9 @@ export default function HomeClient({ entries, allAffirmations }: { entries: any[
             })}
           </div>
         </div>
-      ) : (
+      )}
+
+      {view === "list" && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {entries.length === 0 ? (
             <div className="card" style={{ textAlign: 'center', color: 'var(--muted)', fontStyle: 'italic' }}>No past entries yet.</div>
@@ -118,28 +137,75 @@ export default function HomeClient({ entries, allAffirmations }: { entries: any[
         </div>
       )}
 
-      <div className="section-label" style={{ marginTop: '40px' }}>Her Words (Master List)</div>
-      <div className="card" style={{ background: "var(--fog)" }}>
-        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-          <input
-            className="input-field"
-            placeholder="Add a new affirmation..."
-            value={newAffirmationText}
-            onChange={(e) => setNewAffirmationText(e.target.value)}
-            style={{ flex: 1, borderBottomColor: "var(--muted)" }}
-          />
-          <button className="btn-primary" onClick={handleAddAffirmation} disabled={addingAffirmation}>
-            {addingAffirmation ? "Adding..." : "Add"}
-          </button>
-        </div>
-        <div style={{ maxHeight: "400px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px", paddingRight: "10px" }}>
-          {affirmationsList.map((aff, i) => (
-            <div key={i} className="font-serif" style={{ fontSize: "1.1rem", padding: "16px", background: "var(--white)", borderRadius: "2px", borderLeft: "2px solid var(--gold)" }}>
-              {aff}
+      {view === "affirmations" && (
+        <>
+          <div className="card" style={{ background: "var(--fog)", marginBottom: "20px" }}>
+            <div style={{ fontSize: "0.85rem", color: "var(--muted)", marginBottom: "10px", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+              Add a new affirmation
             </div>
-          ))}
-        </div>
-      </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
+              <input
+                className="input-field"
+                placeholder="The braver I am, the luckier I get..."
+                value={newAffirmationText}
+                onChange={(e) => setNewAffirmationText(e.target.value)}
+                style={{ flex: 1, borderBottomColor: "var(--muted)" }}
+              />
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <select 
+                  className="input-field" 
+                  style={{ flex: 1, padding: "10px", borderBottomColor: "var(--muted)", background: "transparent" }}
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                >
+                  {categories.map(c => <option key={c as string} value={c as string}>{c as string}</option>)}
+                  <option value="Custom">+ Create New Category</option>
+                </select>
+                {newCategory === "Custom" && (
+                  <input
+                    className="input-field"
+                    placeholder="New category name..."
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    style={{ flex: 1, borderBottomColor: "var(--muted)" }}
+                  />
+                )}
+                <button className="btn-primary" onClick={handleAddAffirmation} disabled={addingAffirmation || !newAffirmationText.trim() || (newCategory === "Custom" && !customCategory.trim())}>
+                  {addingAffirmation ? "Adding..." : "Add"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <div className="section-label" style={{ margin: 0 }}>Her Words (Master List)</div>
+            <select 
+              className="input-field" 
+              style={{ padding: "6px 12px", width: "auto", fontSize: "0.85rem", background: "var(--fog)", border: "none", borderRadius: "2px" }}
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              <option value="All">All Categories</option>
+              {categories.map(c => <option key={c as string} value={c as string}>{c as string}</option>)}
+            </select>
+          </div>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {filteredAffirmations.length === 0 ? (
+              <div className="card" style={{ textAlign: 'center', color: 'var(--muted)', fontStyle: 'italic' }}>No affirmations found for this category.</div>
+            ) : (
+              filteredAffirmations.map((aff: any, i) => (
+                <div key={aff.id || i} className="font-serif" style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "1.1rem", padding: "20px", background: "var(--white)", borderRadius: "2px", borderLeft: "2px solid var(--gold)" }}>
+                  <div>{aff.text}</div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--gold)", letterSpacing: "0.05em", textTransform: "uppercase", fontFamily: "var(--font-sans)" }}>
+                    {aff.category}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

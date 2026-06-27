@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import DailyRitualClient from "@/components/DailyRitualClient";
-import { AFFIRMATIONS } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +14,7 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
     orderBy: { createdAt: 'asc' }
   });
 
-  const allAffirmations = [...AFFIRMATIONS, ...customAffirmations.map(a => a.text)];
+  const allAffirmations = customAffirmations.map(a => a.text);
 
   // Parse JSON fields if entry exists
   let parsedEntry = null;

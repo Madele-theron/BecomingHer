@@ -42,5 +42,6 @@ model DailyEntry {
 model CustomAffirmation {
   id        String   @id @default(cuid())
   text      String
+  category  String   @default("General")
   createdAt DateTime @default(now())
 }

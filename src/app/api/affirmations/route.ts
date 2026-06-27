@@ -16,14 +16,17 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { text } = body;
+    const { text, category } = body;
     
     if (!text || typeof text !== "string" || text.trim() === "") {
       return NextResponse.json({ success: false, message: "Text is required" }, { status: 400 });
     }
 
     const newAffirmation = await prisma.customAffirmation.create({
-      data: { text: text.trim() }
+      data: { 
+        text: text.trim(),
+        category: category?.trim() || "General"
+      }
     });
 
     return NextResponse.json({ success: true, data: newAffirmation });

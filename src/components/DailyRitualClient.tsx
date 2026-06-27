@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AFFIRMATIONS, IDENTITY_QUESTIONS, OTHERS_PROMPTS, DAILY_ACTIONS, GESTURES } from "@/lib/constants";
+import { IDENTITY_QUESTIONS, OTHERS_PROMPTS, DAILY_ACTIONS, GESTURES } from "@/lib/constants";
 
 export default function DailyRitualClient({ date, initialData, allAffirmations }: { date: string, initialData: any, allAffirmations: string[] }) {
   const [affirmationsList, setAffirmationsList] = useState(allAffirmations);

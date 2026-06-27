@@ -1,30 +1,4 @@
-export const AFFIRMATIONS = [
-  "The braver I am, the luckier I get.",
-  "Whatever happens, I can handle it.",
-  "I back myself in everything I do.",
-  "I am not waiting until it's easy. I start now.",
-  "I deeply love and accept myself.",
-  "I am an action-oriented person. I take immediate action.",
-  "I give myself permission to be happy.",
-  "Even if they reject me, I do not reject myself.",
-  "I have what it takes.",
-  "Every rejection is a chance to learn. I am not a failure for trying.",
-  "I am enough. I have enough. I know enough.",
-  "I embrace new opportunities. I say yes.",
-  "I am in control and I can create my own joy.",
-  "Nothing is standing in my way.",
-  "I am not defined by my past. I shape my future.",
-  "All challenges are solvable problems.",
-  "I do not need to feel brave to be brave.",
-  "I will not quit on myself. I will not quit on my dreams.",
-  "I am worthy of a great life — and I am committed to building it.",
-  "Something wonderful is about to happen in my life.",
-  "I am becoming a truer, more authentic version of myself.",
-  "The harder I work, the luckier I get.",
-  "I can do hard things. I can figure it out.",
-  "I am not a victim of my circumstances. I take responsibility.",
-  "I choose to act as her — confident, open, alive — right now.",
-];
+// AFFIRMATIONS are now stored in the database under the CustomAffirmation table.
 
 export const IDENTITY_QUESTIONS = [
   "If she woke up today already fully herself — confident, open, unafraid — what's the first thing she would do differently?",
