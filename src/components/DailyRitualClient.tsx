@@ -179,32 +179,6 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
     }
   };
 
-  const [newAffirmationText, setNewAffirmationText] = useState("");
-  const [addingAffirmation, setAddingAffirmation] = useState(false);
-
-  const handleAddAffirmation = async () => {
-    if (!newAffirmationText.trim()) return;
-    setAddingAffirmation(true);
-    try {
-      const res = await fetch("/api/affirmations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: newAffirmationText })
-      });
-      if (res.ok) {
-        showToast("Affirmation added to your master list.");
-        setAffirmationsList(prev => [...prev, newAffirmationText.trim()]);
-        setNewAffirmationText("");
-      } else {
-        showToast("Error adding affirmation.");
-      }
-    } catch (e) {
-      showToast("Connection error.");
-    } finally {
-      setAddingAffirmation(false);
-    }
-  };
-
   const dateStr = new Date(date).toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long' });
   const displayedAffirmation = data.pinnedAffirmation || affirmationsList[data.affirmationIndex];
   const isPinned = !!data.pinnedAffirmation;
@@ -400,29 +374,6 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
               <div style={{ height: "100%", background: "var(--gold)", width: `${(data.actionsDone.length / DAILY_ACTIONS.length) * 100}%`, transition: "width 0.4s ease" }}></div>
             </div>
             <span style={{ fontSize: "0.7rem", color: "#4a4a4a" }}>{data.actionsDone.length} / {DAILY_ACTIONS.length} actions</span>
-          </div>
-        </div>
-
-        <div className="section-label">Her Words (Master List)</div>
-        <div className="card" style={{ background: "var(--fog)" }}>
-          <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-            <input
-              className="input-field"
-              placeholder="Add a new affirmation..."
-              value={newAffirmationText}
-              onChange={(e) => setNewAffirmationText(e.target.value)}
-              style={{ flex: 1, borderBottomColor: "var(--muted)" }}
-            />
-            <button className="btn-primary" onClick={handleAddAffirmation} disabled={addingAffirmation}>
-              {addingAffirmation ? "Adding..." : "Add"}
-            </button>
-          </div>
-          <div style={{ maxHeight: "400px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px", paddingRight: "10px" }}>
-            {affirmationsList.map((aff, i) => (
-              <div key={i} className="font-serif" style={{ fontSize: "1.1rem", padding: "16px", background: "var(--white)", borderRadius: "2px", borderLeft: "2px solid var(--gold)" }}>
-                {aff}
-              </div>
-            ))}
           </div>
         </div>
 

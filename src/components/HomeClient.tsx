@@ -3,8 +3,31 @@
 import { useState } from "react";
 import Link from "next/link";
 
-export default function HomeClient({ entries }: { entries: any[] }) {
+export default function HomeClient({ entries, allAffirmations }: { entries: any[], allAffirmations: string[] }) {
   const [view, setView] = useState<"calendar" | "list">("calendar");
+  const [affirmationsList, setAffirmationsList] = useState(allAffirmations);
+  const [newAffirmationText, setNewAffirmationText] = useState("");
+  const [addingAffirmation, setAddingAffirmation] = useState(false);
+
+  const handleAddAffirmation = async () => {
+    if (!newAffirmationText.trim()) return;
+    setAddingAffirmation(true);
+    try {
+      const res = await fetch("/api/affirmations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: newAffirmationText })
+      });
+      if (res.ok) {
+        setAffirmationsList(prev => [...prev, newAffirmationText.trim()]);
+        setNewAffirmationText("");
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setAddingAffirmation(false);
+    }
+  };
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const entriesMap = new Map(entries.map(e => [e.date, e]));
@@ -94,6 +117,29 @@ export default function HomeClient({ entries }: { entries: any[] }) {
           )}
         </div>
       )}
+
+      <div className="section-label" style={{ marginTop: '40px' }}>Her Words (Master List)</div>
+      <div className="card" style={{ background: "var(--fog)" }}>
+        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+          <input
+            className="input-field"
+            placeholder="Add a new affirmation..."
+            value={newAffirmationText}
+            onChange={(e) => setNewAffirmationText(e.target.value)}
+            style={{ flex: 1, borderBottomColor: "var(--muted)" }}
+          />
+          <button className="btn-primary" onClick={handleAddAffirmation} disabled={addingAffirmation}>
+            {addingAffirmation ? "Adding..." : "Add"}
+          </button>
+        </div>
+        <div style={{ maxHeight: "400px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px", paddingRight: "10px" }}>
+          {affirmationsList.map((aff, i) => (
+            <div key={i} className="font-serif" style={{ fontSize: "1.1rem", padding: "16px", background: "var(--white)", borderRadius: "2px", borderLeft: "2px solid var(--gold)" }}>
+              {aff}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
