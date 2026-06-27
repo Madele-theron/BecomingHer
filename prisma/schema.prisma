@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model DailyEntry {
+  id               String   @id @default(cuid())
+  date             String   @unique // format: YYYY-MM-DD
+  
+  // Morning
+  affirmationIndex Int      @default(0)
+  readCount        Int      @default(0)
+  questionIndex    Int      @default(0)
+  identityAnswer   String   @default("")
+  aiInsight        String   @default("")
+  
+  // Actions
+  actionsDone      String   @default("[]") // JSON array of indices
+  
+  // Others
+  othersPerson     String   @default("")
+  othersGesture    String   @default("")
+  othersHonest     String   @default("")
+  
+  // Evening
+  eveningOthers    String   @default("")
+  eveningWin       String   @default("")
+  eveningGap       String   @default("")
+  eveningTomorrow  String   @default("")
+  closingText      String   @default("")
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
