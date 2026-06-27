@@ -40,6 +40,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ dat
       where: { date },
       update: {
         affirmationIndex: body.affirmationIndex,
+        pinnedAffirmation: body.pinnedAffirmation,
         readCount: body.readCount,
         questionIndex: body.questionIndex,
         identityAnswer: body.identityAnswer,
@@ -57,6 +58,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ dat
       create: {
         date,
         affirmationIndex: body.affirmationIndex ?? 0,
+        pinnedAffirmation: body.pinnedAffirmation ?? null,
         readCount: body.readCount ?? 0,
         questionIndex: body.questionIndex ?? 0,
         identityAnswer: body.identityAnswer ?? "",

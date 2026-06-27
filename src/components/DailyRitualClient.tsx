@@ -3,9 +3,12 @@
 import { useState, useEffect } from "react";
 import { AFFIRMATIONS, IDENTITY_QUESTIONS, OTHERS_PROMPTS, DAILY_ACTIONS, GESTURES } from "@/lib/constants";
 
-export default function DailyRitualClient({ date, initialData }: { date: string, initialData: any }) {
+export default function DailyRitualClient({ date, initialData, allAffirmations }: { date: string, initialData: any, allAffirmations: string[] }) {
+  const [affirmationsList, setAffirmationsList] = useState(allAffirmations);
+  
   const [data, setData] = useState({
     affirmationIndex: 0,
+    pinnedAffirmation: "",
     readCount: 0,
     questionIndex: 0,
     identityAnswer: "",
@@ -35,7 +38,7 @@ export default function DailyRitualClient({ date, initialData }: { date: string,
       const dayIndex = dateObj.getDate();
       setData((prev: any) => ({
         ...prev,
-        affirmationIndex: dayIndex % AFFIRMATIONS.length,
+        affirmationIndex: dayIndex % affirmationsList.length,
         questionIndex: (dayIndex + Math.floor(dayIndex / 7)) % IDENTITY_QUESTIONS.length,
       }));
     }
@@ -51,6 +54,7 @@ export default function DailyRitualClient({ date, initialData }: { date: string,
           ...currentData,
           actionsDone: JSON.stringify(currentData.actionsDone),
           othersGesture: currentData.othersGesture.toString(),
+          pinnedAffirmation: currentData.pinnedAffirmation,
         }),
       });
       if (manual) showToast("Progress saved");
@@ -77,12 +81,27 @@ export default function DailyRitualClient({ date, initialData }: { date: string,
   const update = (key: string, val: any) => setData((prev: any) => ({ ...prev, [key]: val }));
 
   const nextAffirmation = () => {
-    update("affirmationIndex", (data.affirmationIndex + 1) % AFFIRMATIONS.length);
+    if (data.pinnedAffirmation) return;
+    update("affirmationIndex", (data.affirmationIndex + 1) % affirmationsList.length);
     update("readCount", data.readCount + 1);
   };
 
+  const previousAffirmation = () => {
+    if (data.pinnedAffirmation) return;
+    update("affirmationIndex", (data.affirmationIndex - 1 + affirmationsList.length) % affirmationsList.length);
+    update("readCount", data.readCount + 1);
+  };
+
+  const pinAffirmation = () => {
+    if (data.pinnedAffirmation) {
+      update("pinnedAffirmation", "");
+    } else {
+      update("pinnedAffirmation", affirmationsList[data.affirmationIndex]);
+    }
+  };
+
   const readAloud = () => {
-    const text = AFFIRMATIONS[data.affirmationIndex];
+    const text = data.pinnedAffirmation || affirmationsList[data.affirmationIndex];
     if ('speechSynthesis' in window) {
       const utt = new SpeechSynthesisUtterance(text);
       utt.rate = 0.85;
@@ -160,7 +179,35 @@ export default function DailyRitualClient({ date, initialData }: { date: string,
     }
   };
 
+  const [newAffirmationText, setNewAffirmationText] = useState("");
+  const [addingAffirmation, setAddingAffirmation] = useState(false);
+
+  const handleAddAffirmation = async () => {
+    if (!newAffirmationText.trim()) return;
+    setAddingAffirmation(true);
+    try {
+      const res = await fetch("/api/affirmations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: newAffirmationText })
+      });
+      if (res.ok) {
+        showToast("Affirmation added to your master list.");
+        setAffirmationsList(prev => [...prev, newAffirmationText.trim()]);
+        setNewAffirmationText("");
+      } else {
+        showToast("Error adding affirmation.");
+      }
+    } catch (e) {
+      showToast("Connection error.");
+    } finally {
+      setAddingAffirmation(false);
+    }
+  };
+
   const dateStr = new Date(date).toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long' });
+  const displayedAffirmation = data.pinnedAffirmation || affirmationsList[data.affirmationIndex];
+  const isPinned = !!data.pinnedAffirmation;
 
   return (
     <>
@@ -184,11 +231,19 @@ export default function DailyRitualClient({ date, initialData }: { date: string,
         <div className="card" style={{ background: "var(--ink)", position: "relative", padding: "36px 32px" }}>
           <div style={{ position: "absolute", top: 0, left: 0, width: "3px", height: "100%", background: "var(--gold)" }}></div>
           <div className="font-serif" style={{ fontSize: "1.6rem", fontStyle: "italic", color: "var(--white)", marginBottom: "20px", minHeight: "72px", lineHeight: 1.5 }}>
-            {AFFIRMATIONS[data.affirmationIndex]}
+            {displayedAffirmation}
           </div>
-          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <button className="btn-ghost" onClick={nextAffirmation}>Next affirmation</button>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+            {!isPinned && <button className="btn-ghost" onClick={previousAffirmation}>Previous</button>}
+            {!isPinned && <button className="btn-ghost" onClick={nextAffirmation}>Next</button>}
             <button className="btn-ghost" onClick={readAloud}>Read aloud</button>
+            <button 
+              className="btn-ghost" 
+              onClick={pinAffirmation}
+              style={{ borderColor: isPinned ? "var(--gold)" : "", color: isPinned ? "var(--gold)" : "" }}
+            >
+              {isPinned ? "Unpin" : "Pin for today"}
+            </button>
             <span style={{ fontSize: "0.7rem", color: "#6a6a6a", marginLeft: "auto" }}>{data.readCount} read today</span>
           </div>
         </div>
@@ -345,6 +400,29 @@ export default function DailyRitualClient({ date, initialData }: { date: string,
               <div style={{ height: "100%", background: "var(--gold)", width: `${(data.actionsDone.length / DAILY_ACTIONS.length) * 100}%`, transition: "width 0.4s ease" }}></div>
             </div>
             <span style={{ fontSize: "0.7rem", color: "#4a4a4a" }}>{data.actionsDone.length} / {DAILY_ACTIONS.length} actions</span>
+          </div>
+        </div>
+
+        <div className="section-label">Her Words (Master List)</div>
+        <div className="card" style={{ background: "var(--fog)" }}>
+          <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+            <input
+              className="input-field"
+              placeholder="Add a new affirmation..."
+              value={newAffirmationText}
+              onChange={(e) => setNewAffirmationText(e.target.value)}
+              style={{ flex: 1, borderBottomColor: "var(--muted)" }}
+            />
+            <button className="btn-primary" onClick={handleAddAffirmation} disabled={addingAffirmation}>
+              {addingAffirmation ? "Adding..." : "Add"}
+            </button>
+          </div>
+          <div style={{ maxHeight: "400px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px", paddingRight: "10px" }}>
+            {affirmationsList.map((aff, i) => (
+              <div key={i} className="font-serif" style={{ fontSize: "1.1rem", padding: "16px", background: "var(--white)", borderRadius: "2px", borderLeft: "2px solid var(--gold)" }}>
+                {aff}
+              </div>
+            ))}
           </div>
         </div>
 
