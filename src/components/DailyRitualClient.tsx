@@ -25,6 +25,7 @@ export default function DailyRitualClient({ date, initialData }: { date: string,
 
   const [insightLoading, setInsightLoading] = useState(false);
   const [closeLoading, setCloseLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState("");
 
   // Initialize rotating indices based on date if not already set by initial data
@@ -40,18 +41,30 @@ export default function DailyRitualClient({ date, initialData }: { date: string,
     }
   }, [date, initialData]);
 
-  // Auto-save debounced
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      fetch(`/api/entries/${date}`, {
+  const saveProgress = async (currentData: any, manual = false) => {
+    if (manual) setIsSaving(true);
+    try {
+      await fetch(`/api/entries/${date}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...data,
-          actionsDone: JSON.stringify(data.actionsDone),
-          othersGesture: data.othersGesture.toString(),
+          ...currentData,
+          actionsDone: JSON.stringify(currentData.actionsDone),
+          othersGesture: currentData.othersGesture.toString(),
         }),
       });
+      if (manual) showToast("Progress saved");
+    } catch (e) {
+      if (manual) showToast("Error saving progress");
+    } finally {
+      if (manual) setIsSaving(false);
+    }
+  };
+
+  // Auto-save debounced
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      saveProgress(data, false);
     }, 1000);
     return () => clearTimeout(handler);
   }, [data, date]);
@@ -153,7 +166,17 @@ export default function DailyRitualClient({ date, initialData }: { date: string,
     <>
       <div className="header">
         <a href="/" className="header-title">She already is.</a>
-        <span className="header-date">{dateStr}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <button 
+            onClick={() => saveProgress(data, true)} 
+            disabled={isSaving}
+            className="btn-ghost" 
+            style={{ fontSize: "0.7rem", padding: "6px 12px" }}
+          >
+            {isSaving ? "Saving..." : "Save Progress"}
+          </button>
+          <span className="header-date">{dateStr}</span>
+        </div>
       </div>
 
       <div className="container">
