@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { IDENTITY_QUESTIONS, OTHERS_PROMPTS, DAILY_ACTIONS, GESTURES } from "@/lib/constants";
 
-export default function DailyRitualClient({ date, initialData, allAffirmations }: { date: string, initialData: any, allAffirmations: string[] }) {
+export default function DailyRitualClient({ date, initialData, allAffirmations }: { date: string, initialData: any, allAffirmations: { text: string, category: string }[] }) {
   const [affirmationsList, setAffirmationsList] = useState(allAffirmations);
   
   const [data, setData] = useState({
@@ -96,12 +96,12 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
     if (data.pinnedAffirmation) {
       update("pinnedAffirmation", "");
     } else {
-      update("pinnedAffirmation", affirmationsList[data.affirmationIndex]);
+      update("pinnedAffirmation", affirmationsList[data.affirmationIndex].text);
     }
   };
 
   const readAloud = () => {
-    const text = data.pinnedAffirmation || affirmationsList[data.affirmationIndex];
+    const text = data.pinnedAffirmation || affirmationsList[data.affirmationIndex].text;
     if ('speechSynthesis' in window) {
       const utt = new SpeechSynthesisUtterance(text);
       utt.rate = 0.85;
@@ -180,8 +180,20 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
   };
 
   const dateStr = new Date(date).toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long' });
-  const displayedAffirmation = data.pinnedAffirmation || affirmationsList[data.affirmationIndex];
   const isPinned = !!data.pinnedAffirmation;
+  let displayedText = "";
+  let displayedCategory = "";
+
+  if (isPinned) {
+    displayedText = data.pinnedAffirmation;
+    displayedCategory = affirmationsList.find((a: any) => a.text === data.pinnedAffirmation)?.category || "General";
+  } else {
+    const currentAff = affirmationsList[data.affirmationIndex];
+    if (currentAff) {
+      displayedText = currentAff.text;
+      displayedCategory = currentAff.category;
+    }
+  }
 
   return (
     <>
@@ -204,8 +216,11 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
         <div className="section-label">Morning — open with her words</div>
         <div className="card" style={{ background: "var(--ink)", position: "relative", padding: "36px 32px" }}>
           <div style={{ position: "absolute", top: 0, left: 0, width: "3px", height: "100%", background: "var(--gold)" }}></div>
-          <div className="font-serif" style={{ fontSize: "1.6rem", fontStyle: "italic", color: "var(--white)", marginBottom: "20px", minHeight: "72px", lineHeight: 1.5 }}>
-            {displayedAffirmation}
+          <div className="font-serif" style={{ fontSize: "1.6rem", fontStyle: "italic", color: "var(--white)", marginBottom: "8px", minHeight: "72px", lineHeight: 1.5 }}>
+            {displayedText}
+          </div>
+          <div style={{ fontSize: "0.65rem", color: "var(--gold)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "20px", fontFamily: "var(--font-sans)" }}>
+            {displayedCategory}
           </div>
           <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
             {!isPinned && <button className="btn-ghost" onClick={previousAffirmation}>Previous</button>}
