@@ -153,24 +153,25 @@ export default function HomeClient({ entries, affirmations, userName }: { entrie
 
   return (
     <div className="container" style={{ paddingTop: '40px' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
         <div style={{ minWidth: 0 }}>
           <h1 className="header-title" style={{ color: 'var(--ink)', marginBottom: '4px' }}>She already is.</h1>
           {userName && <p style={{ fontSize: '0.8rem', color: 'var(--muted)', margin: 0 }}>Welcome, {userName}</p>}
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
-          <button className="btn-ghost" style={{ borderColor: view === 'calendar' ? 'var(--gold)' : '', color: view === 'calendar' ? 'var(--gold)' : '' }} onClick={() => setView('calendar')}>Calendar</button>
-          <button className="btn-ghost" style={{ borderColor: view === 'list' ? 'var(--gold)' : '', color: view === 'list' ? 'var(--gold)' : '' }} onClick={() => setView('list')}>List</button>
-          <button className="btn-ghost" style={{ borderColor: view === 'affirmations' ? 'var(--gold)' : '', color: view === 'affirmations' ? 'var(--gold)' : '' }} onClick={() => setView('affirmations')}>Affirmations</button>
-          <button 
-            className="btn-ghost" 
-            onClick={handleSignOut}
-            style={{ fontSize: '0.75rem', color: 'var(--muted)' }}
-          >
-            Sign Out
-          </button>
-          <ThemeToggle />
-        </div>
+        <ThemeToggle />
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center', marginBottom: '32px' }}>
+        <button className="btn-ghost" style={{ borderColor: view === 'calendar' ? 'var(--gold)' : '', color: view === 'calendar' ? 'var(--gold)' : '' }} onClick={() => setView('calendar')}>Calendar</button>
+        <button className="btn-ghost" style={{ borderColor: view === 'list' ? 'var(--gold)' : '', color: view === 'list' ? 'var(--gold)' : '' }} onClick={() => setView('list')}>List</button>
+        <button className="btn-ghost" style={{ borderColor: view === 'affirmations' ? 'var(--gold)' : '', color: view === 'affirmations' ? 'var(--gold)' : '' }} onClick={() => setView('affirmations')}>Affirmations</button>
+        <button 
+          className="btn-ghost" 
+          onClick={handleSignOut}
+          style={{ fontSize: '0.75rem', color: 'var(--muted)', marginLeft: 'auto' }}
+        >
+          Sign Out
+        </button>
       </div>
 
       <div style={{ marginBottom: '30px' }}>

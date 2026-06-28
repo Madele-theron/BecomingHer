@@ -72,6 +72,29 @@ body {
   text-transform: uppercase;
 }
 
+/* THEME TOGGLE BUTTON */
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.theme-toggle-btn:hover {
+  color: var(--gold);
+  background-color: var(--warm);
+  transform: scale(1.05);
+}
+.theme-toggle-btn:active {
+  transform: scale(0.95);
+}
+
 /* MAIN LAYOUT */
 .container {
   max-width: 680px;

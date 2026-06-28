@@ -198,19 +198,21 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
 
   return (
     <>
-      <div className="header">
-        <a href="/" className="header-title">She already is.</a>
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "10px", justifyContent: "flex-end" }}>
+      <div className="header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <a href="/" className="header-title">She already is.</a>
           <ThemeToggle />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "space-between", flexWrap: "wrap" }}>
+          <span className="header-date" style={{ whiteSpace: 'nowrap' }}>{dateStr}</span>
           <button 
             onClick={() => saveProgress(data, true)} 
             disabled={isSaving}
             className="btn-ghost" 
-            style={{ fontSize: "0.7rem", padding: "6px 12px" }}
+            style={{ fontSize: "0.7rem", padding: "6px 12px", minHeight: "auto" }}
           >
             {isSaving ? "Saving..." : "Save Progress"}
           </button>
-          <span className="header-date" style={{ whiteSpace: 'nowrap' }}>{dateStr}</span>
         </div>
       </div>
 
