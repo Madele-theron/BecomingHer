@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { IDENTITY_QUESTIONS, OTHERS_PROMPTS, DAILY_ACTIONS, GESTURES } from "@/lib/constants";
+import ThemeToggle from "./ThemeToggle";
 
 export default function DailyRitualClient({ date, initialData, allAffirmations }: { date: string, initialData: any, allAffirmations: { text: string, category: string }[] }) {
   const [affirmationsList, setAffirmationsList] = useState(allAffirmations);
@@ -200,6 +201,7 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
       <div className="header">
         <a href="/" className="header-title">She already is.</a>
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <ThemeToggle />
           <button 
             onClick={() => saveProgress(data, true)} 
             disabled={isSaving}

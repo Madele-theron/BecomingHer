@@ -13,6 +13,21 @@
   --teal-light: #e8f0ed;
 }
 
+[data-theme='dark'] {
+  --ink: #f0ede8;
+  --fog: #1a1a1a;
+  --warm: #2a2a2a;
+  --gold: #c49a6c;
+  --gold-light: #e0c29f;
+  --muted: #a39b92;
+  --white: #242424;
+  --red: #c4a8a8;
+  --red-light: #e5cdcd;
+  --teal: #3a5a50;
+  --teal-dark: #a8c4b8;
+  --teal-light: #24352f;
+}
+
 *, *::before, *::after { 
   box-sizing: border-box; 
   margin: 0; 

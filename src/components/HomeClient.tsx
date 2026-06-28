@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ThemeToggle from "./ThemeToggle";
 
 export default function HomeClient({ entries, affirmations, userName }: { entries: any[], affirmations: any[], userName: string }) {
   const [view, setView] = useState<"calendar" | "list" | "affirmations">("calendar");
@@ -77,9 +78,7 @@ export default function HomeClient({ entries, affirmations, userName }: { entrie
 
       if (res.ok && data.success) {
         setImportMessage(`Imported ${data.imported} affirmation${data.imported !== 1 ? 's' : ''}${data.skipped > 0 ? ` (${data.skipped} duplicates skipped)` : ''}`);
-        // Refresh the page to get updated data
         router.refresh();
-        // Also refetch for immediate UI update
         const affRes = await fetch("/api/affirmations");
         const affData = await affRes.json();
         if (affRes.ok) setAffirmationsList(affData.data);
@@ -91,6 +90,38 @@ export default function HomeClient({ entries, affirmations, userName }: { entrie
     } finally {
       setImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDeleteAffirmation = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this affirmation?")) return;
+    
+    try {
+      const res = await fetch(`/api/affirmations/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setAffirmationsList(prev => prev.filter(a => a.id !== id));
+      } else {
+        alert("Failed to delete affirmation.");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (selectedCategory === "All") return;
+    if (!confirm(`Are you sure you want to delete ALL affirmations in the "${selectedCategory}" category?`)) return;
+    
+    try {
+      const res = await fetch(`/api/affirmations/category?name=${encodeURIComponent(selectedCategory)}`, { method: "DELETE" });
+      if (res.ok) {
+        setAffirmationsList(prev => prev.filter(a => a.category !== selectedCategory));
+        setSelectedCategory("All");
+      } else {
+        alert("Failed to delete category.");
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -138,6 +169,9 @@ export default function HomeClient({ entries, affirmations, userName }: { entrie
           >
             Sign Out
           </button>
+          <div style={{ marginLeft: '4px' }}>
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 
@@ -278,15 +312,20 @@ export default function HomeClient({ entries, affirmations, userName }: { entrie
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <div className="section-label" style={{ margin: 0 }}>Her Words (Master List)</div>
-            <select 
-              className="input-field" 
-              style={{ padding: "6px 12px", width: "auto", fontSize: "0.85rem", background: "var(--fog)", border: "none", borderRadius: "2px" }}
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              <option value="All">All Categories</option>
-              {categories.map(c => <option key={c as string} value={c as string}>{c as string}</option>)}
-            </select>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              {selectedCategory !== "All" && (
+                <button onClick={handleDeleteCategory} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--red)", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em", padding: "6px 12px" }}>Delete Category</button>
+              )}
+              <select 
+                className="input-field" 
+                style={{ padding: "6px 12px", width: "auto", fontSize: "0.85rem", background: "var(--fog)", border: "none", borderRadius: "2px" }}
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <option value="All">All Categories</option>
+                {categories.map(c => <option key={c as string} value={c as string}>{c as string}</option>)}
+              </select>
+            </div>
           </div>
           
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -294,11 +333,18 @@ export default function HomeClient({ entries, affirmations, userName }: { entrie
               <div className="card" style={{ textAlign: 'center', color: 'var(--muted)', fontStyle: 'italic' }}>No affirmations found for this category.</div>
             ) : (
               filteredAffirmations.map((aff: any, i) => (
-                <div key={aff.id || i} className="font-serif" style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "1.1rem", padding: "20px", background: "var(--white)", borderRadius: "2px", borderLeft: "2px solid var(--gold)" }}>
-                  <div>{aff.text}</div>
-                  <div style={{ fontSize: "0.7rem", color: "var(--gold)", letterSpacing: "0.05em", textTransform: "uppercase", fontFamily: "var(--font-sans)" }}>
-                    {aff.category}
+                <div key={aff.id || i} className="font-serif" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", padding: "20px", background: "var(--white)", borderRadius: "2px", borderLeft: "2px solid var(--gold)" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{ fontSize: "1.1rem" }}>{aff.text}</div>
+                    <div style={{ fontSize: "0.7rem", color: "var(--gold)", letterSpacing: "0.05em", textTransform: "uppercase", fontFamily: "var(--font-sans)" }}>
+                      {aff.category}
+                    </div>
                   </div>
+                  <button 
+                    onClick={() => handleDeleteAffirmation(aff.id)} 
+                    style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: "4px", fontSize: "1.2rem", lineHeight: 1 }}
+                    title="Delete affirmation"
+                  >×</button>
                 </div>
               ))
             )}
