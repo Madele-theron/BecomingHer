@@ -21,23 +21,34 @@ export default function HomeClient({ entries, affirmations, userName }: { entrie
   const categories = Array.from(new Set(affirmationsList.map(a => a.category).filter(Boolean)));
 
   const handleAddAffirmation = async () => {
-    if (!newAffirmationText.trim()) return;
+    if (!newAffirmationText.trim()) {
+      setImportMessage("Please enter the affirmation text first.");
+      return;
+    }
     
     const categoryToUse = newCategory === "Custom" ? customCategory.trim() : newCategory;
-    if (!categoryToUse) return;
+    if (!categoryToUse) {
+      setImportMessage("Please enter a category name.");
+      return;
+    }
 
     setAddingAffirmation(true);
+    setImportMessage("");
     try {
       const res = await fetch("/api/affirmations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: newAffirmationText, category: categoryToUse })
       });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+      if (res.ok && data.success) {
         setAffirmationsList(prev => [...prev, data.data]);
         setNewAffirmationText("");
         setCustomCategory("");
+        setNewCategory(categoryToUse); // Keep the newly created category selected
+        setImportMessage(`Added: "${newAffirmationText.trim().substring(0, 40)}..."`);
+      } else {
+        setImportMessage(data.message || "Failed to add affirmation.");
       }
     } catch (e) {
       console.error(e);
@@ -228,7 +239,7 @@ export default function HomeClient({ entries, affirmations, userName }: { entrie
                     style={{ flex: 1, borderBottomColor: "var(--muted)" }}
                   />
                 )}
-                <button className="btn-primary" onClick={handleAddAffirmation} disabled={addingAffirmation || !newAffirmationText.trim() || (newCategory === "Custom" && !customCategory.trim())}>
+                <button className="btn-primary" onClick={handleAddAffirmation} disabled={addingAffirmation}>
                   {addingAffirmation ? "Adding..." : "Add"}
                 </button>
               </div>
