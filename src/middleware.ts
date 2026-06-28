@@ -1,32 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
+import { jwtVerify } from "jose";
 
-export function middleware(request: NextRequest) {
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "fallback-secret-change-me");
+
+export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
-  // Allow public access to login page and auth API
-  if (path === "/login" || path.startsWith("/api/auth")) {
+  if (path === "/login" || path === "/signup" || path.startsWith("/api/auth") || path.startsWith("/affirmations_template")) {
     return NextResponse.next();
   }
 
-  // Check for auth cookie
-  const authToken = request.cookies.get("auth_token")?.value;
+  const token = request.cookies.get("auth_token")?.value;
 
-  if (authToken !== "authenticated") {
-    // Redirect to login if not authenticated
+  if (!token) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  return NextResponse.next();
+  try {
+    await jwtVerify(token, JWT_SECRET);
+    return NextResponse.next();
+  } catch {
+    const response = NextResponse.redirect(new URL("/login", request.url));
+    response.cookies.set({
+      name: "auth_token",
+      value: "",
+      path: "/",
+      maxAge: 0,
+    });
+    return response;
+  }
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };

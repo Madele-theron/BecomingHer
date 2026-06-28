@@ -1,16 +1,22 @@
 import { prisma } from "@/lib/prisma";
+import { getUserIdFromCookies } from "@/lib/auth";
 import DailyRitualClient from "@/components/DailyRitualClient";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function DayPage({ params }: { params: Promise<{ date: string }> }) {
   const { date } = await params;
+
+  const userId = await getUserIdFromCookies();
+  if (!userId) redirect("/login");
   
   const entry = await prisma.dailyEntry.findUnique({
-    where: { date },
+    where: { userId_date: { userId, date } },
   });
 
   const customAffirmations = await prisma.customAffirmation.findMany({
+    where: { userId },
     orderBy: { createdAt: 'asc' }
   });
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getUserIdFromRequest } from "@/lib/auth";
 
 export async function GET(request: Request, { params }: { params: Promise<{ date: string }> }) {
   const { date } = await params;
@@ -8,13 +9,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ date
     return NextResponse.json({ success: false, message: "Date is required" }, { status: 400 });
   }
 
+  const userId = await getUserIdFromRequest(request);
+  if (!userId) {
+    return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 });
+  }
+
   try {
     let entry = await prisma.dailyEntry.findUnique({
-      where: { date },
+      where: { userId_date: { userId, date } },
     });
 
     if (!entry) {
-      // If it doesn't exist, we just return an empty object to let the frontend handle defaults
       return NextResponse.json({ success: true, data: null });
     }
 
@@ -32,12 +37,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ dat
     return NextResponse.json({ success: false, message: "Date is required" }, { status: 400 });
   }
 
+  const userId = await getUserIdFromRequest(request);
+  if (!userId) {
+    return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     
-    // Upsert the entry
     const entry = await prisma.dailyEntry.upsert({
-      where: { date },
+      where: { userId_date: { userId, date } },
       update: {
         affirmationIndex: body.affirmationIndex,
         pinnedAffirmation: body.pinnedAffirmation,
@@ -57,6 +66,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ dat
       },
       create: {
         date,
+        userId,
         affirmationIndex: body.affirmationIndex ?? 0,
         pinnedAffirmation: body.pinnedAffirmation ?? null,
         readCount: body.readCount ?? 0,

@@ -8,40 +8,50 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model User {
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  password           String
+  name               String   @default("")
+  mustChangePassword Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  entries      DailyEntry[]
+  affirmations CustomAffirmation[]
+}
+
 model DailyEntry {
   id               String   @id @default(cuid())
-  date             String   @unique // format: YYYY-MM-DD
+  date             String
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id])
   
-  // Morning
   affirmationIndex Int      @default(0)
   pinnedAffirmation String?
   readCount        Int      @default(0)
   questionIndex    Int      @default(0)
   identityAnswer   String   @default("")
   aiInsight        String   @default("")
-  
-  // Actions
-  actionsDone      String   @default("[]") // JSON array of indices
-  
-  // Others
+  actionsDone      String   @default("[]")
   othersPerson     String   @default("")
   othersGesture    String   @default("")
   othersHonest     String   @default("")
-  
-  // Evening
   eveningOthers    String   @default("")
   eveningWin       String   @default("")
   eveningGap       String   @default("")
   eveningTomorrow  String   @default("")
   closingText      String   @default("")
-  
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  @@unique([userId, date])
 }
 
 model CustomAffirmation {
   id        String   @id @default(cuid())
   text      String
   category  String   @default("General")
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
 }

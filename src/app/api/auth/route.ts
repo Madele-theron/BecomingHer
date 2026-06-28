@@ -1,32 +1,52 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { createToken, comparePassword, setAuthCookie } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
-    const { password } = await request.json();
-    const correctPassword = process.env.APP_PASSWORD;
+    const { email, password } = await request.json();
 
-    if (!correctPassword) {
-      console.error("APP_PASSWORD environment variable is not set.");
-      return NextResponse.json({ success: false, message: "Server misconfiguration" }, { status: 500 });
+    if (!email || !password) {
+      return NextResponse.json({ success: false, message: "Email and password are required" }, { status: 400 });
     }
 
-    if (password === correctPassword) {
-      // Create a response and set an HTTP-only cookie
-      const response = NextResponse.json({ success: true });
-      response.cookies.set({
-        name: "auth_token",
-        value: "authenticated",
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-      });
-      return response;
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+    });
+
+    if (!user) {
+      return NextResponse.json({ success: false, message: "Invalid email or password" }, { status: 401 });
     }
 
-    return NextResponse.json({ success: false, message: "Incorrect password" }, { status: 401 });
+    const isValid = await comparePassword(password, user.password);
+    if (!isValid) {
+      return NextResponse.json({ success: false, message: "Invalid email or password" }, { status: 401 });
+    }
+
+    const token = await createToken(user.id);
+    const response = NextResponse.json({ 
+      success: true, 
+      mustChangePassword: user.mustChangePassword,
+      userName: user.name 
+    });
+    response.cookies.set(setAuthCookie(token));
+    return response;
   } catch (error) {
-    return NextResponse.json({ success: false, message: "Bad request" }, { status: 400 });
+    console.error("Auth error:", error);
+    return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
   }
+}
+
+export async function DELETE() {
+  const response = NextResponse.json({ success: true });
+  response.cookies.set({
+    name: "auth_token",
+    value: "",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+  return response;
 }

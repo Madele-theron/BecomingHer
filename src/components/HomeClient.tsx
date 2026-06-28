@@ -1,17 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-export default function HomeClient({ entries, affirmations }: { entries: any[], affirmations: any[] }) {
+export default function HomeClient({ entries, affirmations, userName }: { entries: any[], affirmations: any[], userName: string }) {
   const [view, setView] = useState<"calendar" | "list" | "affirmations">("calendar");
   const [affirmationsList, setAffirmationsList] = useState(affirmations);
   const [newAffirmationText, setNewAffirmationText] = useState("");
   const [newCategory, setNewCategory] = useState("General");
   const [customCategory, setCustomCategory] = useState("");
   const [addingAffirmation, setAddingAffirmation] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importMessage, setImportMessage] = useState("");
   
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const categories = Array.from(new Set(affirmationsList.map(a => a.category).filter(Boolean)));
 
@@ -41,6 +46,49 @@ export default function HomeClient({ entries, affirmations }: { entries: any[], 
     }
   };
 
+  const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    setImportMessage("");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/affirmations/import", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setImportMessage(`Imported ${data.imported} affirmation${data.imported !== 1 ? 's' : ''}${data.skipped > 0 ? ` (${data.skipped} duplicates skipped)` : ''}`);
+        // Refresh the page to get updated data
+        router.refresh();
+        // Also refetch for immediate UI update
+        const affRes = await fetch("/api/affirmations");
+        const affData = await affRes.json();
+        if (affRes.ok) setAffirmationsList(affData.data);
+      } else {
+        setImportMessage(data.message || "Import failed");
+      }
+    } catch (err) {
+      setImportMessage("Error importing file");
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSignOut = async () => {
+    await fetch("/api/auth", { method: "DELETE" });
+    router.push("/login");
+    router.refresh();
+  };
+
   const todayStr = new Date().toISOString().slice(0, 10);
   const entriesMap = new Map(entries.map(e => [e.date, e]));
 
@@ -64,11 +112,21 @@ export default function HomeClient({ entries, affirmations }: { entries: any[], 
   return (
     <div className="container" style={{ paddingTop: '40px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <h1 className="header-title" style={{ color: 'var(--ink)' }}>She already is.</h1>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div>
+          <h1 className="header-title" style={{ color: 'var(--ink)', marginBottom: '4px' }}>She already is.</h1>
+          {userName && <p style={{ fontSize: '0.8rem', color: 'var(--muted)', margin: 0 }}>Welcome, {userName}</p>}
+        </div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button className="btn-ghost" style={{ borderColor: view === 'calendar' ? 'var(--gold)' : '', color: view === 'calendar' ? 'var(--gold)' : '' }} onClick={() => setView('calendar')}>Calendar</button>
           <button className="btn-ghost" style={{ borderColor: view === 'list' ? 'var(--gold)' : '', color: view === 'list' ? 'var(--gold)' : '' }} onClick={() => setView('list')}>List</button>
           <button className="btn-ghost" style={{ borderColor: view === 'affirmations' ? 'var(--gold)' : '', color: view === 'affirmations' ? 'var(--gold)' : '' }} onClick={() => setView('affirmations')}>Affirmations</button>
+          <button 
+            className="btn-ghost" 
+            onClick={handleSignOut}
+            style={{ fontSize: '0.75rem', color: 'var(--muted)', marginLeft: '8px' }}
+          >
+            Sign Out
+          </button>
         </div>
       </div>
 
@@ -127,7 +185,7 @@ export default function HomeClient({ entries, affirmations }: { entries: any[], 
                   </div>
                   {entry.closingText && (
                     <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '8px', fontStyle: 'italic' }}>
-                      "{entry.closingText}"
+                      &ldquo;{entry.closingText}&rdquo;
                     </div>
                   )}
                 </div>
@@ -174,6 +232,36 @@ export default function HomeClient({ entries, affirmations }: { entries: any[], 
                   {addingAffirmation ? "Adding..." : "Add"}
                 </button>
               </div>
+            </div>
+
+            <div style={{ borderTop: "1px solid var(--muted)", paddingTop: "16px", display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+              <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>Bulk import:</div>
+              <a 
+                href="/affirmations_template.csv" 
+                download 
+                className="btn-ghost"
+                style={{ fontSize: "0.75rem", padding: "6px 12px" }}
+              >
+                ↓ Download Template
+              </a>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleCsvImport}
+                style={{ display: "none" }}
+              />
+              <button 
+                className="btn-ghost"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={importing}
+                style={{ fontSize: "0.75rem", padding: "6px 12px" }}
+              >
+                {importing ? "Importing..." : "↑ Import CSV"}
+              </button>
+              {importMessage && (
+                <span style={{ fontSize: "0.75rem", color: "var(--gold)" }}>{importMessage}</span>
+              )}
             </div>
           </div>
 

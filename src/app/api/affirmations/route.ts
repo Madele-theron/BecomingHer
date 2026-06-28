@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getUserIdFromRequest } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const userId = await getUserIdFromRequest(request);
+    if (!userId) {
+      return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 });
+    }
+
     const affirmations = await prisma.customAffirmation.findMany({
+      where: { userId },
       orderBy: { createdAt: 'asc' }
     });
     return NextResponse.json({ success: true, data: affirmations });
@@ -15,6 +22,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const userId = await getUserIdFromRequest(request);
+    if (!userId) {
+      return NextResponse.json({ success: false, message: "Not authenticated" }, { status: 401 });
+    }
+
     const body = await request.json();
     const { text, category } = body;
     
@@ -25,7 +37,8 @@ export async function POST(request: Request) {
     const newAffirmation = await prisma.customAffirmation.create({
       data: { 
         text: text.trim(),
-        category: category?.trim() || "General"
+        category: category?.trim() || "General",
+        userId,
       }
     });
 
