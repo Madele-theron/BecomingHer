@@ -200,7 +200,7 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
     <>
       <div className="header">
         <a href="/" className="header-title">She already is.</a>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "10px", justifyContent: "flex-end" }}>
           <ThemeToggle />
           <button 
             onClick={() => saveProgress(data, true)} 
@@ -210,7 +210,7 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
           >
             {isSaving ? "Saving..." : "Save Progress"}
           </button>
-          <span className="header-date">{dateStr}</span>
+          <span className="header-date" style={{ whiteSpace: 'nowrap' }}>{dateStr}</span>
         </div>
       </div>
 
@@ -370,7 +370,8 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
                 placeholder={q.p}
                 style={{
                   width: "100%", background: "#232323", border: "none", borderBottom: "1px solid #333",
-                  padding: "8px 0", color: "var(--white)", resize: "none", outline: "none", minHeight: "48px"
+                  padding: "8px 0", color: "var(--white)", resize: "none", outline: "none", minHeight: "48px",
+                  fontFamily: "var(--font-dm-sans), sans-serif", fontSize: "1rem", fontWeight: 300,
                 }}
               />
             </div>
@@ -398,8 +399,12 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
 
       {toast && (
         <div style={{
-          position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)",
-          background: "var(--ink)", color: "var(--white)", fontSize: "0.8rem", padding: "10px 20px", borderRadius: "2px", zIndex: 100
+          position: "fixed",
+          bottom: "max(24px, env(safe-area-inset-bottom, 24px))",
+          left: "50%", transform: "translateX(-50%)",
+          background: "var(--ink)", color: "var(--white)", fontSize: "0.8rem",
+          padding: "10px 20px", borderRadius: "2px", zIndex: 100,
+          whiteSpace: "nowrap",
         }}>
           {toast}
         </div>

@@ -171,3 +171,54 @@ body {
   background: var(--warm);
   margin: 4px 0;
 }
+
+/* ── MOBILE RESPONSIVE ─────────────────────────────────────── */
+@media (max-width: 600px) {
+
+  /* Header: tighten padding so nothing clips */
+  .header {
+    padding: 18px 16px 16px;
+    gap: 10px;
+  }
+
+  /* Container: reduce side padding */
+  .container {
+    padding: 0 14px 80px;
+  }
+
+  /* Cards: lighter padding on small screens */
+  .card {
+    padding: 20px 18px 18px;
+  }
+
+  /* Buttons: ensure 44px minimum touch target height */
+  .btn-primary {
+    min-height: 44px;
+    padding: 10px 18px;
+    font-size: 0.75rem;
+  }
+
+  .btn-ghost {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 0.7rem;
+  }
+
+  /* Inputs: 16px prevents iOS Safari auto-zoom on focus */
+  .input-field {
+    font-size: 1rem;
+  }
+
+  /* Section labels: less top breathing room on mobile */
+  .section-label {
+    padding-top: 24px;
+  }
+}
+
+/* iOS safe-area: extra bottom padding so content
+   doesn't hide behind the home indicator */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .container {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+}

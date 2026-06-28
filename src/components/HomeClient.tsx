@@ -153,25 +153,23 @@ export default function HomeClient({ entries, affirmations, userName }: { entrie
 
   return (
     <div className="container" style={{ paddingTop: '40px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', gap: '16px' }}>
+        <div style={{ minWidth: 0 }}>
           <h1 className="header-title" style={{ color: 'var(--ink)', marginBottom: '4px' }}>She already is.</h1>
           {userName && <p style={{ fontSize: '0.8rem', color: 'var(--muted)', margin: 0 }}>Welcome, {userName}</p>}
         </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
           <button className="btn-ghost" style={{ borderColor: view === 'calendar' ? 'var(--gold)' : '', color: view === 'calendar' ? 'var(--gold)' : '' }} onClick={() => setView('calendar')}>Calendar</button>
           <button className="btn-ghost" style={{ borderColor: view === 'list' ? 'var(--gold)' : '', color: view === 'list' ? 'var(--gold)' : '' }} onClick={() => setView('list')}>List</button>
           <button className="btn-ghost" style={{ borderColor: view === 'affirmations' ? 'var(--gold)' : '', color: view === 'affirmations' ? 'var(--gold)' : '' }} onClick={() => setView('affirmations')}>Affirmations</button>
           <button 
             className="btn-ghost" 
             onClick={handleSignOut}
-            style={{ fontSize: '0.75rem', color: 'var(--muted)', marginLeft: '8px' }}
+            style={{ fontSize: '0.75rem', color: 'var(--muted)' }}
           >
             Sign Out
           </button>
-          <div style={{ marginLeft: '4px' }}>
-            <ThemeToggle />
-          </div>
+          <ThemeToggle />
         </div>
       </div>
 
@@ -254,10 +252,10 @@ export default function HomeClient({ entries, affirmations, userName }: { entrie
                 onChange={(e) => setNewAffirmationText(e.target.value)}
                 style={{ flex: 1, borderBottomColor: "var(--muted)" }}
               />
-              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "flex-end" }}>
                 <select 
                   className="input-field" 
-                  style={{ flex: 1, padding: "10px", borderBottomColor: "var(--muted)", background: "transparent" }}
+                  style={{ flex: '1 1 140px', minWidth: 0, padding: "10px", borderBottomColor: "var(--muted)", background: "transparent" }}
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                 >
@@ -270,10 +268,10 @@ export default function HomeClient({ entries, affirmations, userName }: { entrie
                     placeholder="New category name..."
                     value={customCategory}
                     onChange={(e) => setCustomCategory(e.target.value)}
-                    style={{ flex: 1, borderBottomColor: "var(--muted)" }}
+                    style={{ flex: '1 1 120px', minWidth: 0, borderBottomColor: "var(--muted)" }}
                   />
                 )}
-                <button className="btn-primary" onClick={handleAddAffirmation} disabled={addingAffirmation}>
+                <button className="btn-primary" onClick={handleAddAffirmation} disabled={addingAffirmation} style={{ flexShrink: 0 }}>
                   {addingAffirmation ? "Adding..." : "Add"}
                 </button>
               </div>
