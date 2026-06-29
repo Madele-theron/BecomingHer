@@ -360,10 +360,10 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
 
         <div className="section-label">Evening — close the loop</div>
         <div className="card" style={{ background: "var(--ink)", color: "var(--white)" }}>
-          {[{ label: "Where did she show up for someone else today?", key: "eveningOthers", p: "Even a small moment..." },
-            { label: "Where did she show up today?", key: "eveningWin", p: "Even small moments count..." },
-            { label: "Where did the old version pull her back?", key: "eveningGap", p: "Be honest, not harsh..." },
-            { label: "What does she do differently tomorrow?", key: "eveningTomorrow", p: "One concrete thing..." }].map((q, i) => (
+          {[{ label: "Where did you show up for someone else today?", key: "eveningOthers", p: "Even a small moment..." },
+            { label: "Where did you show up today?", key: "eveningWin", p: "Even small moments count..." },
+            { label: "Where did the old version pull you back?", key: "eveningGap", p: "Be honest, not harsh..." },
+            { label: "What will you do differently tomorrow?", key: "eveningTomorrow", p: "One concrete thing..." }].map((q, i) => (
             <div key={i} style={{ marginBottom: "20px" }}>
               <div style={{ fontSize: "0.8rem", color: "#6a6a6a", marginBottom: "6px", letterSpacing: "0.03em" }}>{q.label}</div>
               <textarea
