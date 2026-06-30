@@ -365,16 +365,12 @@ export default function DailyRitualClient({ date, initialData, allAffirmations }
             { label: "Where did the old version pull you back?", key: "eveningGap", p: "Be honest, not harsh..." },
             { label: "What will you do differently tomorrow?", key: "eveningTomorrow", p: "One concrete thing..." }].map((q, i) => (
             <div key={i} style={{ marginBottom: "20px" }}>
-              <div style={{ fontSize: "0.8rem", color: "#6a6a6a", marginBottom: "6px", letterSpacing: "0.03em" }}>{q.label}</div>
+              <div style={{ fontSize: "0.8rem", color: "var(--evening-label-color)", marginBottom: "6px", letterSpacing: "0.03em" }}>{q.label}</div>
               <textarea
+                className="evening-textarea"
                 value={(data as any)[q.key]}
                 onChange={(e) => update(q.key, e.target.value)}
                 placeholder={q.p}
-                style={{
-                  width: "100%", background: "#232323", border: "none", borderBottom: "1px solid #333",
-                  padding: "8px 0", color: "var(--white)", resize: "none", outline: "none", minHeight: "48px",
-                  fontFamily: "var(--font-dm-sans), sans-serif", fontSize: "1rem", fontWeight: 300,
-                }}
               />
             </div>
           ))}

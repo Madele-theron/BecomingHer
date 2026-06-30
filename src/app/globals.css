@@ -11,6 +11,13 @@
   --teal: #a8c4b8;
   --teal-dark: #3a5a50;
   --teal-light: #e8f0ed;
+
+  /* Evening textarea variables (for light theme, card is dark) */
+  --evening-textarea-bg: #232323;
+  --evening-textarea-color: #faf9f7;
+  --evening-textarea-border: #333333;
+  --evening-textarea-placeholder: #6a6a6a;
+  --evening-label-color: #a39b92;
 }
 
 [data-theme='dark'] {
@@ -26,6 +33,13 @@
   --teal: #3a5a50;
   --teal-dark: #a8c4b8;
   --teal-light: #24352f;
+
+  /* Evening textarea variables (for dark theme, card is light) */
+  --evening-textarea-bg: #e6e2db;
+  --evening-textarea-color: #1a1a1a;
+  --evening-textarea-border: #d8d2c9;
+  --evening-textarea-placeholder: #9c9287;
+  --evening-label-color: #6a6a6a;
 }
 
 *, *::before, *::after { 
@@ -244,4 +258,29 @@ body {
   .container {
     padding-bottom: calc(60px + env(safe-area-inset-bottom));
   }
+}
+
+.evening-textarea {
+  width: 100%;
+  background: var(--evening-textarea-bg);
+  border: none;
+  border-bottom: 1px solid var(--evening-textarea-border);
+  padding: 12px 14px;
+  color: var(--evening-textarea-color);
+  resize: none;
+  outline: none;
+  min-height: 52px;
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.5;
+  transition: all 0.2s ease;
+}
+
+.evening-textarea::placeholder {
+  color: var(--evening-textarea-placeholder);
+}
+
+.evening-textarea:focus {
+  border-bottom-color: var(--gold);
 }
